@@ -38,14 +38,17 @@ client.connect('localhost', 1883, 60)
 # Connect to the MQTT server and process messages in a background thread. 
 client.loop_start() 
 # Main loop to listen for button presses. 
-print('Script is running, press Ctrl-C to quit...') 
-while True: 
-   # Look for a change from high to low value on the button input to 
-   # signal a button press. 
-   button_first = GPIO.input(BUTTON_PIN) 
-   time.sleep(0.02)  # Delay for about 20 milliseconds to debounce. 
-   button_second = GPIO.input(BUTTON_PIN) 
-   if button_first == GPIO.HIGH and button_second == GPIO.LOW: 
-       print('Button pressed!') 
-       # Send a toggle message to the ESP8266 LED topic. 
-       client.publish('/leds/esp8266', 'TOGGLE')
+print('Script is running, press Ctrl-C to quit...')
+try:
+    while True: 
+       # Look for a change from high to low value on the button input to 
+       # signal a button press. 
+       button_first = GPIO.input(BUTTON_PIN) 
+       time.sleep(0.02)  # Delay for about 20 milliseconds to debounce. 
+       button_second = GPIO.input(BUTTON_PIN) 
+       if button_first == GPIO.HIGH and button_second == GPIO.LOW: 
+           print('Button pressed!') 
+           # Send a toggle message to the ESP8266 LED topic. 
+           client.publish('/leds/esp8266', 'TOGGLE')
+finally:
+    GPIO.cleanup()
