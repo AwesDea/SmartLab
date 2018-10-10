@@ -40,21 +40,36 @@ def on_connect(client, userdata, flags, rc):
    print("Connected with result code " + str(rc)) 
    # Subscribing in on_connect() means that if we lose the connection and 
    # reconnect then subscriptions will be renewed. 
-   client.subscribe("/leds/pi") 
-   client.subscribe("/lcd/pi") 
+   client.subscribe("/pi/lcd") 
+   client.subscribe("/pi/lock")
+   client.subscribe("/pi/mqtt led")
+   client.subscribe("/pi/ir")
+   client.subscribe("/pi/notif")
 
 # The callback for when a PUBLISH message is received from the server. 
 def on_message(client, userdata, msg): 
     print(msg.topic+" "+str( msg.payload)) 
    # Check if this is a message for the Pi LED. 
-    if msg.topic == '/leds/pi': 
+    if msg.topic == '/pi/mqtt led': 
        # Look at the message data and perform the appropriate action. 
        if msg.payload == b'on': 
            GPIO.output(LED_PIN, GPIO.HIGH) 
        elif msg.payload == b'off': 
            GPIO.output(LED_PIN, GPIO.LOW)
            
-    elif msg.topic == '/lcd/pi':
+    elif msg.topic == '/pi/lcd':
+        print('Lcd not implemented yet')
+        print(msg.payload)
+        
+    elif msg.topic == '/pi/notif':
+        print(msg.payload)
+        
+    elif msg.topic == '/pi/lock':
+        print('Lock still not implemented')
+        print(msg.payload)
+        
+    elif msg.topic == '/pi/ir':
+        print('IR still not implemented')
         print(msg.payload)
 # Create MQTT client and connect to localhost, i.e. the Raspberry Pi running 
 # this script and the MQTT server. 
