@@ -1,7 +1,8 @@
 //ESP 2 with Lamp & IR
 
 #include <ESP8266WiFi.h>
-#include <IRremote.h>
+#include <IRrecv.h>
+#include <IRutils.h>
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 /************************* WiFi Access Point *********************************/
@@ -94,7 +95,7 @@ void loop() {
   Adafruit_MQTT_Subscribe *subscription;
   while ((subscription = mqtt.readSubscription())) {
     if (subscription == &esp_lamp) {
-      char *message = (char *)esp_fan.lastread;
+      char *message = (char *)esp_lamp.lastread;
       Serial.print(F("Got: "));
       Serial.println(message);
       // Check if the message was off, on or toggle.

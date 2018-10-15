@@ -1,7 +1,9 @@
 //ESP 1 with Fan & IR
 
 #include <ESP8266WiFi.h>
-#include <IRremote.h>
+#include <IRremoteESP8266.h>
+#include <IRrecv.h>
+#include <IRutils.h>
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 /************************* WiFi Access Point *********************************/
