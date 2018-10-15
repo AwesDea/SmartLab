@@ -100,16 +100,21 @@ void loop() {
       // Check if the message was off, on or toggle.
       if (strncmp(message, "off", 3) == 0) {
         digitalWrite(LAMP, LOW);
+        pi_notif.publish("Lamp Turned OFF");
       }
       else if (strncmp(message, "on", 3) == 0) {
         digitalWrite(LAMP, HIGH);
+        pi_notif.publish("Lamp Turned ON");
+
       }
       else if (strncmp(message, "toggle", 6) == 0) {
         if (digitalRead(LAMP) == HIGH) {
           digitalWrite(LAMP, LOW);
+          pi_notif.publish("Lamp Toggled and Turned OFF");
         }
         else if (digitalRead(LAMP) == LOW) {
           digitalWrite(LAMP, HIGH);
+          pi_notif.publish("Lamp Toggled and Turned ON");
         }
       }
     }

@@ -52,7 +52,7 @@ void setup() {
   Serial.begin(115200);
 
   // set IR
-  irrecv.FAN_SPEEDbleIRIn();  // Start the receiver
+  irrecv.enableIRIn();  // Start the receiver
 
   Serial.println(F("RPi-ESP1-MQTT"));
   // Connect to WiFi access point.
@@ -145,20 +145,27 @@ void MQTT_connect() {
 //function for setting speed of fan
 void set_fan_state(int state) {
   if (state == 0) {
-    analogWrite(FAN_SPEED, 0); // Send PWM signal to L298N FAN_SPEEDble pin
+    analogWrite(FAN_SPEED, 0); // Send PWM signal to L298N FAN_SPEED pin
     Serial.println(state);
+    pi_notif.publish("Fan turned OFF");
   }
   else if (state == 1) {
-    analogWrite(FAN_SPEED, 130); // Send PWM signal to L298N FAN_SPEEDble pin
+    analogWrite(FAN_SPEED, 130); // Send PWM signal to L298N FAN_SPEED pin
     Serial.println(state);
+    pi_notif.publish("Fan turned LOW");
+
   }
   else if (state == 2) {
-    analogWrite(FAN_SPEED, 185); // Send PWM signal to L298N FAN_SPEEDble pin
+    analogWrite(FAN_SPEED, 185); // Send PWM signal to L298N FAN_SPEED pin
     Serial.println(state);
+    pi_notif.publish("Fan turned MEDIUM");
+
   }
   else if (state == 3) {
-    analogWrite(FAN_SPEED, 255); // Send PWM signal to L298N FAN_SPEEDble pin
+    analogWrite(FAN_SPEED, 255); // Send PWM signal to L298N FAN_SPEED pin
     Serial.println(state);
+    pi_notif.publish("Fan turned HIGH");
+
   }
 }
 
