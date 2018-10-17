@@ -18,8 +18,8 @@
 
 //
 /************ Global State ******************/
-#define IR      0              // Pin connected to the IR. GPIO 0
-#define LAMP    2              // Pin connected to the lamp. GPIO 2 
+#define IR      2              // Pin connected to the IR. GPIO 0
+#define LAMP    0              // Pin connected to the lamp. GPIO 2 
 
 
 

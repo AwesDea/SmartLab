@@ -19,8 +19,8 @@
 
 //
 /************ Global State ******************/
-#define IR            0              // Pin connected to the IR. GPIO 0
-#define FAN_SPEED     2              // Pin connected to the Fan and sets speed of the fan. GPIO 2 
+#define IR            2              // Pin connected to the IR. GPIO 0
+#define FAN_SPEED     0              // Pin connected to the Fan and sets speed of the fan. GPIO 2 
 
 
 
