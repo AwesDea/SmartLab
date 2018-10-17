@@ -34,6 +34,8 @@ Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT, MQTT_USERNAME, MQTT_P
 Adafruit_MQTT_Publish pi_mqtt_led = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/mqtt led");         //checking mqtt connection for rpi
 Adafruit_MQTT_Publish pi_lcd = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/lcd");                   //give rpi messages for printing
 Adafruit_MQTT_Publish pi_notif = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/notif");               //give rpi notifications
+Adafruit_MQTT_Publish pi_notif = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/dht");               //give rpi notifications
+Adafruit_MQTT_Publish pi_notif = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/smoke");               //give rpi notifications
 // Setup a feed for subscribing to changes.
 Adafruit_MQTT_Subscribe esp_dht = Adafruit_MQTT_Subscribe(&mqtt, MQTT_USERNAME "/esp3/dht");            // get messages for dht
 Adafruit_MQTT_Subscribe esp_smoke = Adafruit_MQTT_Subscribe(&mqtt, MQTT_USERNAME "/esp3/smoke");        // get messages for Lamp
@@ -97,13 +99,13 @@ void loop() {
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   float h = dht.readHumidity();
   // Read temperature as Celsius (the default)
-  float t = dht.readTemperature();
+  float temp = dht.readTemperature();
 
-  if (isnan(h) || isnan(t)) {
+  if (isnan(h) || isnan(temp)) {
     Serial.println("Failed to read from DHT sensor!");
   } else {
 
-    st = String(t);
+    st = String(temp);
     sh = String(h);
     dht_string = "Humidity: " + sh + " %\t" + "Temperature: " + st + " *C";
     Serial.println(dht_string);
@@ -119,9 +121,9 @@ void loop() {
   /*-----TODO------Replace the name "R0" with the value of R0 in the demo of First mq9_test -----TODO----*/
   /*-----TODO------Replace the name "R0" with the value of R0 in the demo of First mq9_test -----TODO----*/
   /*-----TODO------Replace the name "R0" with the value of R0 in the demo of First mq9_test -----TODO----*/
-  ratio = RS_gas / R0; // ratio = RS/R0
+  ratio = RS_gas / -0.09; // ratio = RS/R0
   /*-----------------------------------------------------------------------*/
-  smoke_string = "sensor_volt = " + sensor_volt + "RS_ratio = " + RS_gas + "Rs/R0 = " ratio;
+  smoke_string = "sensor_volt = " + String(sensor_volt) + "RS_ratio = " + String(RS_gas) + "Rs/R0 = " + String(ratio);
   Serial.println(smoke_string);
 
 
@@ -163,7 +165,8 @@ void loop() {
   delay(2000);
   timer += 1;
   // each (t * 2) seconds sends feedback automatically
-  int t = 10
+  int t = 10;
+  pi_notif.publish(timer%t);
   if (timer % t == 0) {
     char dht_char_array[dht_string.length() + 1];
     dht_string.toCharArray(dht_char_array, dht_string.length() + 1 );
