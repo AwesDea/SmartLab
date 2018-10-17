@@ -18,8 +18,8 @@
 
 //
 /************ Global State ******************/
-#define DHT_PIN      0              // Pin connected to the IR. GPIO 0
-#define LAMP    2              // Pin connected to the lamp. GPIO 2 
+#define DHT_PIN      2              // Pin connected to the IR. GPIO 0
+#define LAMP    0              // Pin connected to the lamp. GPIO 2 
 #define DHT_TYPE DHT11  // for DHT model == DHT 11
 
 
