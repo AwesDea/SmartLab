@@ -70,7 +70,7 @@ void setup() {
   Serial.println();
   Serial.println("WiFi connected");
   Serial.println("IP address: "); Serial.println(WiFi.localIP());
-  pi_notif("ESP1 WIFI connected.")
+  pi_notif.publish("ESP1 WIFI connected.");
   
   // Setup MQTT subscription for feeds.
   mqtt.subscribe(&esp_fan);
@@ -148,7 +148,7 @@ void MQTT_connect() {
       while (1);
     }
   }
-   pi_notif("ESP1 MQTT connected.")
+   pi_notif.publish("ESP1 MQTT connected.");
 }
 //function for setting speed of fan
 void set_fan_state(int state) {
@@ -176,4 +176,3 @@ void set_fan_state(int state) {
     pi_notif.publish("Fan turned HIGH");
   }
 }
-
