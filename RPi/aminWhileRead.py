@@ -14,15 +14,15 @@ reader = SimpleMFRC522.SimpleMFRC522()
 
 #setting lcd pins
 
-lcd_rs        = 21  # Note this might need to be changed to 21 for older revision Pi's.
-lcd_en        = 20
-lcd_d4        = 16
-lcd_d5        = 13
-lcd_d6        = 19
-lcd_d7        = 26
-lcd_backlight = 2
-lcd_columns = 16
-lcd_rows    = 2
+lcd_rs        = 3
+lcd_en        = 4
+lcd_d4        = 14
+lcd_d5        = 15
+lcd_d6        = 17
+lcd_d7        = 18
+lcd_backlight = 27
+lcd_columns   = 16
+lcd_rows      = 2
 
 #initiating lcd
 lcd = LCD.Adafruit_CharLCD(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6, lcd_d7, lcd_columns, lcd_rows, lcd_backlight)

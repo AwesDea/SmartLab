@@ -23,13 +23,13 @@ ir_history = [] # IR commands datas stored here. type: (ir_command,time)
 GPIO.setmode(GPIO.BCM)
 
 #setting lcd pins
-lcd_rs        = 21
-lcd_en        = 20
-lcd_d4        = 16
-lcd_d5        = 13
-lcd_d6        = 19
-lcd_d7        = 26
-lcd_backlight = 2
+lcd_rs        = 3
+lcd_en        = 4
+lcd_d4        = 14
+lcd_d5        = 15
+lcd_d6        = 17
+lcd_d7        = 18
+lcd_backlight = 27
 lcd_columns   = 16
 lcd_rows      = 2
 
@@ -39,15 +39,12 @@ lcd = LCD.Adafruit_CharLCD(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6, lcd_d7, lcd_c
 #setting card reader
 reader = SimpleMFRC522.SimpleMFRC522()
 
-# setting IR receiver
-IR_pin = 12
-
 #setting MQTT LED PIN
 MQTT_LED_PIN = 1
 
 # LOCK PINS
-LOCK_FIRST_PIN = 2
-LOCK_SECOND_PIN = 3
+LOCK_FIRST_PIN = 22
+LOCK_SECOND_PIN = 23
 
 # Setup callback functions that are  called when MQTT events happen like 
 # connecting to the server or receiving data from a subscribed feed. 
@@ -73,7 +70,7 @@ def on_message(client, userdata, msg):
            GPIO.output(MQTT_LED_PIN, GPIO.LOW)
            
     elif msg.topic == '/pi/lcd':
-        lcd.message(msg.payload)
+        lcd_messaging(lcd_lock,msg.payload)
 
         # all notifications from any device are stored here and printed in rpi console.    
     elif msg.topic == '/pi/notif':
@@ -156,7 +153,11 @@ def on_message(client, userdata, msg):
         
     #DHT sends tempreture details to the "/pi/dht" topic    
     elif msg.topic == '/pi/dht':
-        get_temp_feedback(lock,last_message, msg.payload)
+        lcd_messaging(lock, msg.payload)
+    
+    #Smoke sends smoke details to the "/pi/smoke" topic    
+    elif msg.topic == '/pi/smoke':
+        lcd_messaging(lock, msg.payload)
         
 # Create MQTT client and connect to localhost, i.e. the Raspberry Pi running 
 # this script and the MQTT server. 
@@ -170,32 +171,29 @@ client.loop_start()
 print('Script is running, press Ctrl-C to quit...')
 
 
-#needs to lock lcd
+# locks lcd and write the message
 def lcd_messaging(lock, message):
     #logging.debug('want to clear before messaging')
     lcd_clearing(lock)
     lock.acquire()
     try:
-        print('In lock for messaging.')
         lcd.message(message)
     except KeyboardInterrupt:
-        print('Finished in messaging')
+        pass
     finally:
         lock.release()
-        print('Lock released after messaging.')
 
 
 def lcd_clearing(lock):
     
     lock.acquire()
     try:
-        print('In lock for clearing.')
         lcd.clear()
         lock.release()
     except KeyboardInterrupt:
-        print('Finished in clearing')
+        pass
     finally:
-        print('Lock released after clearing.')
+        pass
 
 
 #open the door nfc tags
@@ -207,34 +205,25 @@ def doorLock(lock):
             if id == 489637981035:
                 print('Access Granted')
                 lcd_messaging(lock, 'Access Granted')
-                # we saved a text (name of the owner of the card in this case) on the rfid card
+                # we saved a text (name of the owner of the card in this case on the rfid card
                 print('Hello ' + text)
-                time.sleep(1) #wainting fo 1 sec
+                time.sleep(1) #message stays on LCD fo 1 sec
                 lcd_clearing(lock)
-        	lcd_messaging(lock,last_message)
+                #lcd_messaging(lock,last_message)
+
             else:
                 print('Access Denied')
                 lcd_messaging(lock, 'Access Denied')
                 time.sleep(1)
                 lcd_clearing(lock)
-        	lcd_messaging(lock,last_message)
+                #lcd_messaging(lock,last_message)
+
 
     except KeyboardInterrupt:
-        print('Finished')
+        pass
     finally:
-        print('finished')
+        pass
 
-def get_temp_feedback(lock,last_message, temp_feedback):
-    try:
-        lcd_messaging(lock,last_message)
-        
-        last_message = temp_feedback
-        print(last_message)
-        lcd_messaging(lock,last_message)
-    except KeyboardInterrupt:
-        print('Finished Temping')
-    finally:
-        print('finished temping')
 
 def ask_for_temp_feddback():
     client.publish('/esp3/dht', 'feedback')
@@ -243,20 +232,15 @@ def ask_for_temp_feddback():
 
 lcd_last_message = 'Good Luck!'
 lcd_lock = threading.Lock()
-nfc = threading.Thread(target=doorLock, args=(lcd_lock,), name='NFC Reader')
-nfc.daemon = True
-
-temp = threading.Thread(target=get_temp_feedback, args=(lcd_lock,lcd_last_message, ), name='Tempreture Reader')
-temp.daemon = True
-try:
-    nfc.start()
-    temp.start()
-    temp.join()
-    nfc.join()
-
-
-
-finally:
-    pass
+##nfc = threading.Thread(target=doorLock, args=(lcd_lock,), name='NFC Reader')
+##nfc.daemon = True
+##
+##try:
+##    nfc.start()
+##    nfc.join()
+##finally:
+##    pass
+##while True:
+doorLock(lcd_lock)
 
 
