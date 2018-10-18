@@ -1,7 +1,8 @@
 //ESP 2 with Lamp & IR
 
 #include <ESP8266WiFi.h>
-#include <IRremote.h>
+#include <IRrecv.h>
+#include <IRutils.h>
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 /************************* WiFi Access Point *********************************/
@@ -17,8 +18,8 @@
 
 //
 /************ Global State ******************/
-#define IR      0              // Pin connected to the IR. GPIO 0
-#define LAMP    2              // Pin connected to the lamp. GPIO 2 
+#define IR      2              // Pin connected to the IR. GPIO 0
+#define LAMP    0              // Pin connected to the lamp. GPIO 2 
 
 
 
@@ -94,22 +95,27 @@ void loop() {
   Adafruit_MQTT_Subscribe *subscription;
   while ((subscription = mqtt.readSubscription())) {
     if (subscription == &esp_lamp) {
-      char *message = (char *)esp_fan.lastread;
+      char *message = (char *)esp_lamp.lastread;
       Serial.print(F("Got: "));
       Serial.println(message);
       // Check if the message was off, on or toggle.
       if (strncmp(message, "off", 3) == 0) {
         digitalWrite(LAMP, LOW);
+        pi_notif.publish("Lamp Turned OFF");
       }
       else if (strncmp(message, "on", 3) == 0) {
         digitalWrite(LAMP, HIGH);
+        pi_notif.publish("Lamp Turned ON");
+
       }
       else if (strncmp(message, "toggle", 6) == 0) {
         if (digitalRead(LAMP) == HIGH) {
           digitalWrite(LAMP, LOW);
+          pi_notif.publish("Lamp Toggled and Turned OFF");
         }
         else if (digitalRead(LAMP) == LOW) {
           digitalWrite(LAMP, HIGH);
+          pi_notif.publish("Lamp Toggled and Turned ON");
         }
       }
     }
