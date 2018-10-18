@@ -51,6 +51,7 @@ decode_results results;
 
 
 void setup() {
+  pi_notif.publish("testing");
   Serial.begin(115200);
 
   // set IR
