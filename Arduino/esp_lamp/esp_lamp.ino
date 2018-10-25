@@ -103,7 +103,7 @@ void loop() {
         digitalWrite(LAMP, LOW);
         pi_notif.publish("Lamp Turned OFF");
       }
-      else if (strncmp(message, "on", 3) == 0) {
+      else if (strncmp(message, "on", 2) == 0) {
         digitalWrite(LAMP, HIGH);
         pi_notif.publish("Lamp Turned ON");
 
