@@ -7,19 +7,75 @@ import Adafruit_CharLCD as LCD
 import threading
 import logging
 import Adafruit_DHT
+import pandas as pd
+import numpy as np
+import datetime
+#import matplotlib.pyplot as plt
 
 # Configuration:
 
 # Data managment
-notification_history = [] #notifications stored here. type: (notif message, time)
-dht_history = [] #DHT sensor datas stored here. type: (temp,humidity,time)
-smoke_history = [] #smoke sensor datas stored here. type: (smoke,time)
-door_lock_history = [] # Door lock datas stored here. type: (card_id,access_response,time)
-lamp_history = [] # Lamp datas stored here. type: (lamp_command,time)
-fan_history = [] # Fan datas stored here. type: (fan_status,time)
-ir_history = [] # IR commands datas stored here. type: (ir_command,time)
+try:
+    notification_history = pd.read_pickle('notifications history')  #sensor sent notifications  stored in notification_history.
+except:
+    notification_history = pd.DataFrame({'date':[datetime.datetime.now()],'sensor':[np.nan],'message':['hello world!']})
+    notification_history.set_index('date', inplace=True)
+    notification_history.to_pickle('notifications history')
 
+try:
+    door_lock_history = pd.read_pickle('door lock history')  #door lock sent datas  stored in door_lock_history.
+except:
+    door_lock_history = pd.DataFrame({'date':[datetime.datetime.now()], 'ID':[np.nan], 'response':[np.nan]})
+    door_lock_history.set_index('date', inplace=True)
+    door_lock_history.to_pickle('door lock history')
+
+try:
+    smoke_history = pd.read_pickle('smoke history')  #smoke sent datas  stored in smoke_history.
+except:
+    smoke_history = pd.DataFrame({'date':[datetime.datetime.now()], 'smoke':[np.nan]})
+    smoke_history.set_index('date', inplace=True)
+    smoke_history.to_pickle('smoke history')
+
+try:
+    dht_history = pd.read_pickle('dht history')  #DHT sent datas  stored in dht_history.
+except:
+    dht_history = pd.DataFrame({'date':[datetime.datetime.now()], 'temp':[np.nan], 'humidity':[np.nan]})
+    dht_history.set_index('date')
+    dht_history.to_pickle('dht history')
+
+
+try:
+    lamp_history = pd.read_pickle('lamp history')  #lamp sent datas  stored in lamp_history.
+except:
+    lamp_history = pd.DataFrame({'date':[datetime.datetime.now()],'command':[np.nan]})
+    lamp_history.set_index('date', inplace=True)
+    lamp_history.to_pickle('lamp history')
+
+
+try:
+    fan_history = pd.read_pickle('fan history')  #fan sent datas stored in fan_history.
+except:
+    fan_history = pd.DataFrame({'date':[datetime.datetime.now()],'command':[np.nan]})
+    fan_history.set_index('date', inplace=True)
+    fan_history.to_pickle('fan history')
+
+
+try:
+    IR_history = pd.read_pickle('IR history')  #IR sent datas stored in IR_history.
+except:
+    IR_history = pd.DataFrame({'date':[datetime.datetime.now()],'command':[np.nan]})
+    IR_history.set_index('date', inplace=True)
+    IR_history.to_pickle('IR history')
+
+##print(door_lock_history)
+##print(lamp_history)
+##print(notification_history)
+##print(fan_history)
+##print(dht_history)
+##print(smoke_history)
+##print(IR_history)
 # Initialize GPIOs
+
 GPIO.setmode(GPIO.BCM)
 
 #setting lcd pins
@@ -105,51 +161,54 @@ def on_message(client, userdata, msg):
         
         ir_msg = msg.payload
         # For turning Fan OFF
-        if ir_msg == b'D4DD0381':
+        if ir_msg == b'16203967':
             client.publish('/esp1/fan', 'off')
 
         # For turning Fan ON
-        elif ir_msg == b'F7C03F':
+        elif ir_msg == b'16236607':
             client.publish('/esp1/fan', 'low')
         
         # FAN SPEED #
         
         # For speed 1 Fan
-        elif ir_msg == b'F710EF':
+        elif ir_msg == b'16191727':
             client.publish('/esp1/fan', 'low')
         
         # For speed 2 Fan
-        elif ir_msg == b'6471EC7D':
+        elif ir_msg == b'16224367':
             client.publish('/esp1/fan', 'medium')
         
         # For speed 3 Fan
-        elif ir_msg == b'9D52009D':
+        elif ir_msg == b'16208047':
             client.publish('/esp1/fan', 'high')
         
         # LAMP #
         
         # For turning Lamp ON
-        elif ir_msg == b'8503705D':
+        elif ir_msg == b'16187647':
             client.publish('/esp2/lamp', 'on')
             
-            pass#turn on lamp
         # For turning Lamp OFF
-        elif ir_msg == b'DEB0C861':
+        elif ir_msg == b'16220287':
             client.publish('/esp2/lamp', 'off')
-            pass# lamp
+
         # For toggling the Lamp
-        elif ir_msg == b'F7C837':
+        elif ir_msg == b'16238647':
             client.publish('/esp2/lamp', 'toggle')
-            pass#turn off lamp
         
         # LCD BACKLIGHT #
         
         # For toggling LCD Backlight
-        elif ir_msg == b'F7D02F':
-            if lcd_backlight == GPIO.HIGH:
-                GPIO.output(lcd_backlight,Low)
-            else:
-                 GPIO.output(lcd_backlight,HIGH)   
+        elif ir_msg == b'16240687':
+            lh = GPIO.input(lcd_backlight)
+            print(lh)
+            if lh == GPIO.HIGH:
+                GPIO.output(lcd_backlight,GPIO.LOW)
+                print('Backlight Off!')
+            elif lh == GPIO.LOW:
+                GPIO.output(lcd_backlight,GPIO.HIGH)
+                print('Backlight ON!')
+
         
     #DHT sends tempreture details to the "/pi/dht" topic    
     elif msg.topic == '/pi/dht':
@@ -201,6 +260,7 @@ def doorLock(lock):
     try:
         while(True):
             id, text = reader.read()
+            print(id,text)
             #we saved the id from a random card and use that or another card to get granted or denied access you can change it in order to use ur own rfid card
             if id == 489637981035:
                 print('Access Granted')
