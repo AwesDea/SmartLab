@@ -14,66 +14,7 @@ import datetime
 
 # Configuration:
 
-# Data managment
-try:
-    notification_history = pd.read_pickle('notifications history')  #sensor sent notifications  stored in notification_history.
-except:
-    notification_history = pd.DataFrame({'date':[datetime.datetime.now()],'sensor':[np.nan],'message':['hello world!']})
-    notification_history.set_index('date', inplace=True)
-    notification_history.to_pickle('notifications history')
 
-try:
-    door_lock_history = pd.read_pickle('door lock history')  #door lock sent datas  stored in door_lock_history.
-except:
-    door_lock_history = pd.DataFrame({'date':[datetime.datetime.now()], 'ID':[np.nan], 'response':[np.nan]})
-    door_lock_history.set_index('date', inplace=True)
-    door_lock_history.to_pickle('door lock history')
-
-try:
-    smoke_history = pd.read_pickle('smoke history')  #smoke sent datas  stored in smoke_history.
-except:
-    smoke_history = pd.DataFrame({'date':[datetime.datetime.now()], 'smoke':[np.nan]})
-    smoke_history.set_index('date', inplace=True)
-    smoke_history.to_pickle('smoke history')
-
-try:
-    dht_history = pd.read_pickle('dht history')  #DHT sent datas  stored in dht_history.
-except:
-    dht_history = pd.DataFrame({'date':[datetime.datetime.now()], 'temp':[np.nan], 'humidity':[np.nan]})
-    dht_history.set_index('date')
-    dht_history.to_pickle('dht history')
-
-
-try:
-    lamp_history = pd.read_pickle('lamp history')  #lamp sent datas  stored in lamp_history.
-except:
-    lamp_history = pd.DataFrame({'date':[datetime.datetime.now()],'command':[np.nan]})
-    lamp_history.set_index('date', inplace=True)
-    lamp_history.to_pickle('lamp history')
-
-
-try:
-    fan_history = pd.read_pickle('fan history')  #fan sent datas stored in fan_history.
-except:
-    fan_history = pd.DataFrame({'date':[datetime.datetime.now()],'command':[np.nan]})
-    fan_history.set_index('date', inplace=True)
-    fan_history.to_pickle('fan history')
-
-
-try:
-    IR_history = pd.read_pickle('IR history')  #IR sent datas stored in IR_history.
-except:
-    IR_history = pd.DataFrame({'date':[datetime.datetime.now()],'command':[np.nan]})
-    IR_history.set_index('date', inplace=True)
-    IR_history.to_pickle('IR history')
-
-##print(door_lock_history)
-##print(lamp_history)
-##print(notification_history)
-##print(fan_history)
-##print(dht_history)
-##print(smoke_history)
-##print(IR_history)
 # Initialize GPIOs
 
 GPIO.setmode(GPIO.BCM)
@@ -101,6 +42,83 @@ MQTT_LED_PIN = 1
 # LOCK PINS
 LOCK_FIRST_PIN = 22
 LOCK_SECOND_PIN = 23
+
+
+
+
+# Data managment
+def get_notification_history():
+    try:
+        notification_history = pd.read_pickle('notifications history')  #sensor sent notifications  stored in notification_history.
+    except:
+        notification_history = pd.DataFrame({'date':[datetime.datetime.now()],'sensor':[np.nan],'message':['hello world!']})
+        notification_history.set_index('date', inplace=True)
+        notification_history.to_pickle('notifications history')
+    return notification_history
+
+def get_door_lock_history():
+    try:
+        door_lock_history = pd.read_pickle('door lock history')  #door lock sent datas  stored in door_lock_history.
+    except:
+        door_lock_history = pd.DataFrame({'date':[datetime.datetime.now()], 'ID':[np.nan], 'response':[np.nan]})
+        door_lock_history.set_index('date', inplace=True)
+        door_lock_history.to_pickle('door lock history')
+    return door_lock_history
+def save_door_lock_history(df):
+    df.to_pickle('door lock history')
+
+def get_smoke_history():
+    try:
+        smoke_history = pd.read_pickle('smoke history')  #smoke sent datas  stored in smoke_history.
+    except:
+        smoke_history = pd.DataFrame({'date':[datetime.datetime.now()], 'smoke':[np.nan]})
+        smoke_history.set_index('date', inplace=True)
+        smoke_history.to_pickle('smoke history')
+    return smoke_history
+
+def get_dht_history():
+    try:
+        dht_history = pd.read_pickle('dht history')  #DHT sent datas  stored in dht_history.
+    except:
+        dht_history = pd.DataFrame({'date':[datetime.datetime.now()], 'temp':[np.nan], 'humidity':[np.nan]})
+        dht_history.set_index('date')
+        dht_history.to_pickle('dht history')
+    return dht_history
+
+def get_lamp_history():
+    try:
+        lamp_history = pd.read_pickle('lamp history')  #lamp sent datas  stored in lamp_history.
+    except:
+        lamp_history = pd.DataFrame({'date':[datetime.datetime.now()],'command':[np.nan]})
+        lamp_history.set_index('date', inplace=True)
+        lamp_history.to_pickle('lamp history')
+    return lamp_history
+
+def get_fan_history():
+    try:
+        fan_history = pd.read_pickle('fan history')  #fan sent datas stored in fan_history.
+    except:
+        fan_history = pd.DataFrame({'date':[datetime.datetime.now()],'command':[np.nan]})
+        fan_history.set_index('date', inplace=True)
+        fan_history.to_pickle('fan history')
+    return fan_history
+
+def get_IR_history():
+    try:
+        IR_history = pd.read_pickle('IR history')  #IR sent datas stored in IR_history.
+    except:
+        IR_history = pd.DataFrame({'date':[datetime.datetime.now()],'command':[np.nan]})
+        IR_history.set_index('date', inplace=True)
+        IR_history.to_pickle('IR history')
+        return IR_history
+
+##print(door_lock_history)
+##print(lamp_history)
+##print(notification_history)
+##print(fan_history)
+##print(dht_history)
+##print(smoke_history)
+##print(IR_history)
 
 # Setup callback functions that are  called when MQTT events happen like 
 # connecting to the server or receiving data from a subscribed feed. 
@@ -260,10 +278,20 @@ def doorLock(lock):
     try:
         while(True):
             id, text = reader.read()
+            date = datetime.datetime.now() #time of reading a card!
             print(id,text)
-            #we saved the id from a random card and use that or another card to get granted or denied access you can change it in order to use ur own rfid card
+            #getting the door lock history dataframe
+            door_lock_history = get_door_lock_history()
+
+            #we saved the id from a random card and use that or another card to get granted or denied access you can change it in order to use ur own RFID card
             if id == 489637981035:
                 print('Access Granted')
+                
+                #save the action in the dataframe
+                df = pd.DataFrame({'date':[date], 'ID':[id], 'response':['Granted']})
+                df.set_index('date',inplace=True)
+                door_lock_history = door_lock_history.append(df)
+                save_door_lock_history(door_lock_history)
                 lcd_messaging(lock, 'Access Granted')
                 # we saved a text (name of the owner of the card in this case on the rfid card
                 print('Hello ' + text)
@@ -273,6 +301,10 @@ def doorLock(lock):
 
             else:
                 print('Access Denied')
+                df = pd.DataFrame({'date':[date], 'ID':[id], 'response':['Denied']})
+                df.set_index('date',inplace=True)
+                door_lock_history = door_lock_history.append(df)
+                save_door_lock_history(door_lock_history)
                 lcd_messaging(lock, 'Access Denied')
                 time.sleep(1)
                 lcd_clearing(lock)
@@ -302,5 +334,6 @@ lcd_lock = threading.Lock()
 ##    pass
 ##while True:
 doorLock(lcd_lock)
+print(get_door_lock_history())
 
 
