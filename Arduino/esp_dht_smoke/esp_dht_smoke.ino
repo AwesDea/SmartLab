@@ -97,7 +97,6 @@ void loop() {
   /* this is our 'wait for incoming subscription packets' busy subloop try to spend your time here*/
 
   /************* DHT code: *************/
-  //Serial.println("starting DHT again...");
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   float h = dht.readHumidity();
@@ -136,7 +135,7 @@ void loop() {
       Serial.println(message);
       // Check if the message feedback.
       if (strncmp(message, "feedback", 8) == 0) {
-        pi_notif.publish("wait for Smoke response...");
+        pi_notif.publish("esp_dht_smoke is sending Smoke response...");
         char smoke_char_array[smoke_string.length() + 1];
         smoke_string.toCharArray(smoke_char_array, smoke_string.length() + 1 );
         pi_smoke.publish(smoke_char_array);
@@ -149,7 +148,7 @@ void loop() {
       Serial.println(message);
       // Check if the message was for feedback
       if (strncmp(message, "feedback", 8) == 0) {
-        pi_notif.publish("wait for DHT response...");
+        pi_notif.publish("esp_dht_smoke is sending dht response...");
         char dht_char_array[dht_string.length() + 1];
         dht_string.toCharArray(dht_char_array, dht_string.length() + 1 );
         pi_dht.publish(dht_char_array);

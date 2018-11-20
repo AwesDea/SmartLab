@@ -51,7 +51,6 @@ decode_results results;
 
 
 void setup() {
-  pi_notif.publish("testing");
   Serial.begin(115200);
 
   // set IR
@@ -71,7 +70,7 @@ void setup() {
   Serial.println();
   Serial.println("WiFi connected");
   Serial.println("IP address: "); Serial.println(WiFi.localIP());
-  pi_notif.publish("ESP1 WIFI connected.");
+  pi_notif.publish("esp_fan WIFI connected.");
   
   // Setup MQTT subscription for feeds.
   mqtt.subscribe(&esp_fan);
@@ -90,7 +89,7 @@ void loop() {
   if (irrecv.decode(&results)) {
     unsigned int value = results.value;
     pi_ir.publish(value);//send ir received value to rpi
-    pi_notif.publish(value);//send ir received value to rpi
+    pi_notif.publish("esp_fan sent IR" + value);//send ir received value to rpi
     irrecv.resume(); // Receive the next value
   }
 
@@ -156,24 +155,24 @@ void set_fan_state(int state) {
   if (state == 0) {
     analogWrite(FAN_SPEED, 0); // Send PWM signal to L298N FAN_SPEED pin
     Serial.println(state);
-    pi_notif.publish("Fan turned OFF");
+    pi_notif.publish("fan turned OFF");
   }
   
   else if (state == 1) {
     analogWrite(FAN_SPEED, 130); // Send PWM signal to L298N FAN_SPEED pin
     Serial.println(state);
-    pi_notif.publish("Fan turned LOW");
+    pi_notif.publish("esp_fan turned LOW");
   }
   
   else if (state == 2) {
     analogWrite(FAN_SPEED, 185); // Send PWM signal to L298N FAN_SPEED pin
     Serial.println(state);
-    pi_notif.publish("Fan turned MEDIUM");
+    pi_notif.publish("esp_fan turned MEDIUM");
   }
   
   else if (state == 3) {
     analogWrite(FAN_SPEED, 255); // Send PWM signal to L298N FAN_SPEED pin
     Serial.println(state);
-    pi_notif.publish("Fan turned HIGH");
+    pi_notif.publish("esp_fan turned HIGH");
   }
 }
