@@ -14,6 +14,7 @@ import datetime
 
 # Configuration:
 
+new_notifications = []
 
 # Initialize GPIOs
 
@@ -36,14 +37,10 @@ lcd = LCD.Adafruit_CharLCD(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6, lcd_d7, lcd_c
 #setting card reader
 reader = SimpleMFRC522.SimpleMFRC522()
 
-#setting MQTT LED PIN
-MQTT_LED_PIN = 1
 
 # LOCK PINS
 LOCK_FIRST_PIN = 22
 LOCK_SECOND_PIN = 23
-
-
 
 
 # Data managment
@@ -56,14 +53,27 @@ def get_notification_history():
         notification_history.to_pickle('notifications history')
     return notification_history
 
+def save_notification_history(df):
+    df.to_pickle('notifications history')
+
+def get_rfid_history():
+    try:
+        rfid_history = pd.read_pickle('RFID history')  #door lock sent datas  stored in door_lock_history.
+    except:
+        rfid_history = pd.DataFrame({'date':[datetime.datetime.now()], 'ID':[np.nan], 'response':[np.nan]})
+        rfid_history.set_index('date', inplace=True)
+        rfid_history.to_pickle('RFID history')
+    return door_lock_history
+
 def get_door_lock_history():
     try:
         door_lock_history = pd.read_pickle('door lock history')  #door lock sent datas  stored in door_lock_history.
     except:
-        door_lock_history = pd.DataFrame({'date':[datetime.datetime.now()], 'ID':[np.nan], 'response':[np.nan]})
+        door_lock_history = pd.DataFrame({'date':[datetime.datetime.now()], 'mean':[np.nan], 'response':[np.nan]})
         door_lock_history.set_index('date', inplace=True)
         door_lock_history.to_pickle('door lock history')
     return door_lock_history
+
 def save_door_lock_history(df):
     df.to_pickle('door lock history')
 
@@ -76,6 +86,9 @@ def get_smoke_history():
         smoke_history.to_pickle('smoke history')
     return smoke_history
 
+def save_smoke_history(df):
+    df.to_pickle('smoke history')
+
 def get_dht_history():
     try:
         dht_history = pd.read_pickle('dht history')  #DHT sent datas  stored in dht_history.
@@ -84,6 +97,9 @@ def get_dht_history():
         dht_history.set_index('date')
         dht_history.to_pickle('dht history')
     return dht_history
+
+def save_dht_history(df):
+    df.to_pickle('dht history')
 
 def get_lamp_history():
     try:
@@ -94,6 +110,9 @@ def get_lamp_history():
         lamp_history.to_pickle('lamp history')
     return lamp_history
 
+def save_lamp_history(df):
+    df.to_pickle('lamp history')
+
 def get_fan_history():
     try:
         fan_history = pd.read_pickle('fan history')  #fan sent datas stored in fan_history.
@@ -103,6 +122,9 @@ def get_fan_history():
         fan_history.to_pickle('fan history')
     return fan_history
 
+def save_fan_history(df):
+    df.to_pickle('fan history')
+
 def get_IR_history():
     try:
         IR_history = pd.read_pickle('IR history')  #IR sent datas stored in IR_history.
@@ -111,6 +133,21 @@ def get_IR_history():
         IR_history.set_index('date', inplace=True)
         IR_history.to_pickle('IR history')
         return IR_history
+    
+def save_IR_history(df):
+    df.to_pickle('IR history')
+    
+def get_LCD_history():
+    try:
+        lcd_history = pd.read_pickle('LCD history')  #IR sent datas stored in IR_history.
+    except:
+        lcd_history = pd.DataFrame({'date':[datetime.datetime.now()],'message':[np.nan]})
+        lcd_history.set_index('date', inplace=True)
+        lcd_history.to_pickle('LCD history')
+        return IR_history
+    
+def save_LCD_history(df):
+    df.to_pickle('LCD history')
 
 ##print(door_lock_history)
 ##print(lamp_history)
@@ -134,23 +171,25 @@ def on_connect(client, userdata, flags, rc):
 
 # The callback for when a PUBLISH message is received from the server. 
 def on_message(client, userdata, msg): 
-    print(msg.topic+" "+str( msg.payload)) 
-   # Check if this is a message for the Pi LED. 
-    if msg.topic == '/pi/mqtt led': 
-       # Look at the message data and perform the appropriate action. 
-       if msg.payload == b'on': 
-           GPIO.output(MQTT_LED_PIN, GPIO.HIGH) 
-       elif msg.payload == b'off': 
-           GPIO.output(MQTT_LED_PIN, GPIO.LOW)
+    print(msg.topic + " " +str(msg.payload)) 
            
-    elif msg.topic == '/pi/lcd':
-        lcd_messaging(lcd_lock,msg.payload)
+    if msg.topic == '/pi/lcd':
+        lcd_messaging(lcd_lock, msg.payload)
 
         # all notifications from any device are stored here and printed in rpi console.    
     elif msg.topic == '/pi/notif':
-        print("Notification Received but nothing gonna happen")
+        date = datetime.datetime.now()
+        notif_list = msg.split()
+        notifs = get_notification_history()
+        df = pd.DataFrame({'date':[date], 'sensor':[notif_list[0]], 'message':[str(notif_list[1:])]})
+        df.set_index(date, inplace=True)
+        notifs = notifs.append(df)
+        save_notification_history(notifs)
+        new_notifications.append(msg)
+                
         
     elif msg.topic == '/pi/lock':
+        #TODO df for door lock
         
         # For locking the door
         if msg.payload == b'LOCK':
@@ -286,12 +325,13 @@ def doorLock(lock):
             #we saved the id from a random card and use that or another card to get granted or denied access you can change it in order to use ur own RFID card
             if id == 489637981035:
                 print('Access Granted')
+                client.publish('/pi/lock','unlock')
                 
                 #save the action in the dataframe
                 df = pd.DataFrame({'date':[date], 'ID':[id], 'response':['Granted']})
                 df.set_index('date',inplace=True)
-                door_lock_history = door_lock_history.append(df)
-                save_door_lock_history(door_lock_history)
+                rfid_history = rfid_history.append(df)
+                save_rfid_history(rfid_history)
                 lcd_messaging(lock, 'Access Granted')
                 # we saved a text (name of the owner of the card in this case on the rfid card
                 print('Hello ' + text)
@@ -301,10 +341,13 @@ def doorLock(lock):
 
             else:
                 print('Access Denied')
+                client.publish('/pi/lock','unlock')
+
+                #save the action in the dataframe
                 df = pd.DataFrame({'date':[date], 'ID':[id], 'response':['Denied']})
                 df.set_index('date',inplace=True)
-                door_lock_history = door_lock_history.append(df)
-                save_door_lock_history(door_lock_history)
+                rfid_history = rfid_history.append(df)
+                save_rfid_history(rfid_history)
                 lcd_messaging(lock, 'Access Denied')
                 time.sleep(1)
                 lcd_clearing(lock)
