@@ -63,7 +63,9 @@ def get_rfid_history():
         rfid_history = pd.DataFrame({'date':[datetime.datetime.now()], 'ID':[np.nan], 'response':[np.nan]})
         rfid_history.set_index('date', inplace=True)
         rfid_history.to_pickle('RFID history')
-    return door_lock_history
+    return rfid_history
+def save_rfid_history(df):
+    df.to_pickle('RFID history')
 
 def get_door_lock_history():
     try:
@@ -320,7 +322,7 @@ def doorLock(lock):
             date = datetime.datetime.now() #time of reading a card!
             print(id,text)
             #getting the door lock history dataframe
-            door_lock_history = get_door_lock_history()
+            rfid_history = get_rfid_history()
 
             #we saved the id from a random card and use that or another card to get granted or denied access you can change it in order to use ur own RFID card
             if id == 489637981035:
