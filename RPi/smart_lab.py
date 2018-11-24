@@ -71,7 +71,7 @@ def get_door_lock_history():
     try:
         door_lock_history = pd.read_pickle('door lock history')  #door lock sent datas  stored in door_lock_history.
     except:
-        door_lock_history = pd.DataFrame({'date':[datetime.datetime.now()], 'mean':[np.nan], 'response':[np.nan]})
+        door_lock_history = pd.DataFrame({'date':[datetime.datetime.now()], 'response':[np.nan]})
         door_lock_history.set_index('date', inplace=True)
         door_lock_history.to_pickle('door lock history')
     return door_lock_history
@@ -191,7 +191,8 @@ def on_message(client, userdata, msg):
                 
         
     elif msg.topic == '/pi/lock':
-        #TODO df for door lock
+        date = datetime.datetime.now()
+        
         
         # For locking the door
         if msg.payload == b'LOCK':
@@ -202,6 +203,14 @@ def on_message(client, userdata, msg):
             time.sleep(2)
             GPIO.output(LOCK_FIRST_PIN, GPIO.LOW)
             GPIO.output(LOCK_FIRST_PIN, GPIO.LOW)
+            
+            door_lock_history = get_door_lock_history()
+            df = pd.DataFrame({'date':[date], 'response':['Lock']})
+            df.set_index('date',inplace=True)
+            door_lock_history = door_lock_history.append(df)
+            save_door_lock_history(door_lock_history)
+            
+            
         
         # For unlocking the door
         if msg.payload == b'UNLOCK':
@@ -212,6 +221,12 @@ def on_message(client, userdata, msg):
             time.sleep(2)
             GPIO.output(LOCK_FIRST_PIN, GPIO.LOW)
             GPIO.output(LOCK_FIRST_PIN, GPIO.LOW)
+                        
+            door_lock_history = get_door_lock_history()
+            df = pd.DataFrame({'date':[date], 'response':['Unlock']})
+            df.set_index('date',inplace=True)
+            door_lock_history = door_lock_history.append(df)
+            save_door_lock_history(door_lock_history)
         
         
     elif msg.topic == '/pi/ir':
@@ -350,6 +365,7 @@ def doorLock(lock):
                 df.set_index('date',inplace=True)
                 rfid_history = rfid_history.append(df)
                 save_rfid_history(rfid_history)
+                
                 lcd_messaging(lock, 'Access Denied')
                 time.sleep(1)
                 lcd_clearing(lock)
