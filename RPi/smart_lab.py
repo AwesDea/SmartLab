@@ -172,18 +172,19 @@ def on_connect(client, userdata, flags, rc):
    client.subscribe("/pi/notif")
 
 # The callback for when a PUBLISH message is received from the server. 
-def on_message(client, userdata, msg): 
-    print(msg.topic + " " +str(msg.payload)) 
+def on_message(client, userdata, msg):
+    date = datetime.datetime.now()
+
+    print(msg.topic + " " +str(msg.payload))
+    
            
     if msg.topic == '/pi/lcd':
         lcd_messaging(lcd_lock, msg.payload)
 
         # all notifications from any device are stored here and printed in rpi console.    
-    elif msg.topic == '/pi/notif':
-        date = datetime.datetime.now()
-        notif_list = msg.split()
+        notif_list = msg.split(' ',1)
         notifs = get_notification_history()
-        df = pd.DataFrame({'date':[date], 'sensor':[notif_list[0]], 'message':[str(notif_list[1:])]})
+        df = pd.DataFrame({'date':[date], 'sensor':[notif_list[0]], 'message':[notif_list[1]]})
         df.set_index(date, inplace=True)
         notifs = notifs.append(df)
         save_notification_history(notifs)
@@ -191,7 +192,6 @@ def on_message(client, userdata, msg):
                 
         
     elif msg.topic == '/pi/lock':
-        date = datetime.datetime.now()
         
         
         # For locking the door
@@ -231,9 +231,20 @@ def on_message(client, userdata, msg):
         
     elif msg.topic == '/pi/ir':
         
-        # FAN #
-        
+# Saving command to Dataframe        
         ir_msg = msg.payload
+        
+        command = ir_msg.decode('UTF-8')
+        IR_history = get_IR_history()
+        df = pd.DataFrame({'date':[date], 'command':[command]})
+        df.set_index(date, inplace=True)
+        IR_history = IR_history.append(df)
+        save_IR_history(IR_history)
+        
+        
+        # FAN
+        
+        
         # For turning Fan OFF
         if ir_msg == b'16203967':
             client.publish('/esp1/fan', 'off')
@@ -286,10 +297,20 @@ def on_message(client, userdata, msg):
         
     #DHT sends tempreture details to the "/pi/dht" topic    
     elif msg.topic == '/pi/dht':
+        dht_response = msg.payload.decode('UTF-8').split()
+        dht_history = get_dht_history()
+        df = pd.DataFrame({'date':[datetime.datetime.now()], 'temp':[dht_response[4]], 'humidity':[dht_response[1]]})
+        df.set_index(date, inplace=True)
+        dht_history = dht_history.append(df)
+        save_dht_history(dht_history)
+        
+        
         lcd_messaging(lock, msg.payload)
     
     #Smoke sends smoke details to the "/pi/smoke" topic    
     elif msg.topic == '/pi/smoke':
+        # TODO df for smoke
+        
         lcd_messaging(lock, msg.payload)
         
 # Create MQTT client and connect to localhost, i.e. the Raspberry Pi running 
@@ -396,5 +417,3 @@ lcd_lock = threading.Lock()
 ##while True:
 doorLock(lcd_lock)
 print(get_door_lock_history())
-
-
