@@ -58,9 +58,9 @@ Add additional notes about how to deploy this on a live system
 
 ## Built With
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+* [Python3](https://python.org) - RaspberryPi code
+* [Pandas](https://pandas.pydata.org/) - Data Management
+* [Arduino Editor](https://www.arduino.cc/) - Used to code and program ESP8266
 
 ## Contributing
 
