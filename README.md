@@ -72,8 +72,8 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-* **Hoora Abootalebi** - *Initial work* - [PurpleBooth](https://github.com/HooraAboo)
-* **Amin Isaai** - *Initial work* - [PurpleBooth](https://github.com/HooraAboo)
+* **Hoora Abootalebi** - *Most of Hardware work* - [Hoora](https://github.com/HooraAboo)
+* **Amin Isaai** - *Most of Software work* - [Amin](https://github.com/HooraAboo)
 
 See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
