@@ -121,7 +121,7 @@ void loop() {
   //-0.09 was the value of R0 from the mq9 tester file
   ratio = RS_gas / -0.09; // ratio = RS/R0
   /*-----------------------------------------------------------------------*/
-  smoke_string = "sensor_volt= " + String(sensor_volt) + "RS_ratio= " + String(RS_gas) + "Rs/R0= " + String(ratio);
+  smoke_string = "sensor_volt= " + String(sensor_volt) + "RS_ratio= "   + String(ratio);
   //Serial.println(smoke_string);
 
 
