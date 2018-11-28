@@ -79,29 +79,18 @@ def get_door_lock_history():
 def save_door_lock_history(df):
     df.to_pickle('door lock history')
 
-def get_smoke_history():
+def get_dht_mq9_history():
     try:
-        smoke_history = pd.read_pickle('smoke history')  #smoke sent datas  stored in smoke_history.
+        dht_mq9_history = pd.read_pickle('dht & mq9 history')  #smoke sent datas  stored in smoke_history.
     except:
-        smoke_history = pd.DataFrame({'date':[datetime.datetime.now()], 'smoke':[np.nan]})
-        smoke_history.set_index('date', inplace=True)
-        smoke_history.to_pickle('smoke history')
-    return smoke_history
+        dht_mq9_history = pd.DataFrame({'date':[date], 'temp':[np.nan], 'humidity':[np.nan], 'mq9_ratio':[np.nan], 'mq9_volt':[np.nan]})
+        dht_mq9_history.set_index('date', inplace=True)
+        dht_mq9_history.to_pickle('dht & mq9 history')
+    return dht_mq9_history
 
-def save_smoke_history(df):
-    df.to_pickle('smoke history')
+def save_dht_mq9_history(df):
+    df.to_pickle('dht & mq9 history')
 
-def get_dht_history():
-    try:
-        dht_history = pd.read_pickle('dht history')  #DHT sent datas  stored in dht_history.
-    except:
-        dht_history = pd.DataFrame({'date':[datetime.datetime.now()], 'temp':[np.nan], 'humidity':[np.nan]})
-        dht_history.set_index('date')
-        dht_history.to_pickle('dht history')
-    return dht_history
-
-def save_dht_history(df):
-    df.to_pickle('dht history')
 
 def get_lamp_history():
     try:
@@ -295,24 +284,20 @@ def on_message(client, userdata, msg):
                 print('Backlight ON!')
 
         
-    #DHT sends tempreture details to the "/pi/dht" topic    
-    elif msg.topic == '/pi/dht':
-        dht_response = msg.payload.decode('UTF-8').split()
-        dht_history = get_dht_history()
-        df = pd.DataFrame({'date':[datetime.datetime.now()], 'temp':[dht_response[4]], 'humidity':[dht_response[1]]})
+    #DHT & MQ9 send details to the "/pi/dht_mq9" topic    
+    elif msg.topic == '/pi/dht_mq9':
+        dht_mq9_response = msg.payload.decode('UTF-8').split()
+        print(dht_mq9_response)
+        dht_mq9_history = get_dht_mq9_history()
+        df = pd.DataFrame({'date':[date], 'temp':[dht_mq9_response[4]], 'humidity':[dht_mq9_response[1]], 'mq9_ratio':[dht_mq9_response[9]], 'mq9_volt':[dht_mq9_response[7]]})
         df.set_index(date, inplace=True)
-        dht_history = dht_history.append(df)
-        save_dht_history(dht_history)
+        dht_mq9_history = dht_mq9_history.append(df)
+        save_dht_mq9_history(dht_mq9_history)
         
         
         lcd_messaging(lock, msg.payload)
     
-    #Smoke sends smoke details to the "/pi/smoke" topic    
-    elif msg.topic == '/pi/smoke':
-        # TODO df for smoke
-        
-        lcd_messaging(lock, msg.payload)
-        
+
 # Create MQTT client and connect to localhost, i.e. the Raspberry Pi running 
 # this script and the MQTT server. 
 client = mqtt.Client() 
