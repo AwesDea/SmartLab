@@ -364,7 +364,6 @@ def doorLock(lock):
 
             else:
                 print('Access Denied')
-                client.publish('/pi/lock','unlock')
 
                 #save the action in the dataframe
                 df = pd.DataFrame({'date':[date], 'ID':[id], 'response':['Denied']})
@@ -385,7 +384,7 @@ def doorLock(lock):
 
 
 def ask_for_temp_feddback():
-    client.publish('/esp3/dht', 'feedback')
+    client.publish('/esp3/dht_mq9', 'feedback')
 
         
 
