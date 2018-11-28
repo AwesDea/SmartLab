@@ -1,4 +1,4 @@
-//ESP 3 with DHT & Smoke
+//ESP 3 with DHT11 & MQ9
 
 #include <ESP8266WiFi.h>
 #include "Adafruit_MQTT.h"
@@ -9,7 +9,7 @@
 #define WLAN_SSID       "Smart Lab"
 #define WLAN_PASS       "amints25"
 
-#define MQTT_SERVER      "192.168.43.101" // ip address of rpi
+#define MQTT_SERVER      "192.168.0.100" // ip address of rpi
 #define MQTT_PORT         1883
 #define MQTT_USERNAME    ""
 #define MQTT_PASSWORD         ""
