@@ -34,37 +34,41 @@ Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT, MQTT_USERNAME, MQTT_P
 Adafruit_MQTT_Publish pi_mqtt_led = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/mqtt led");         //checking mqtt connection for rpi
 Adafruit_MQTT_Publish pi_lcd = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/lcd");                   //give rpi messages for printing
 Adafruit_MQTT_Publish pi_notif = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/notif");               //give rpi notifications
-Adafruit_MQTT_Publish pi_notif = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/dht");               //give rpi notifications
-Adafruit_MQTT_Publish pi_notif = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/smoke");               //give rpi notifications
+Adafruit_MQTT_Publish pi_dht_mq9 = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/dht_mq9");               //give rpi notifications
+
 // Setup a feed for subscribing to changes.
-Adafruit_MQTT_Subscribe esp_dht = Adafruit_MQTT_Subscribe(&mqtt, MQTT_USERNAME "/esp3/dht");            // get messages for dht
-Adafruit_MQTT_Subscribe esp_smoke = Adafruit_MQTT_Subscribe(&mqtt, MQTT_USERNAME "/esp3/smoke");        // get messages for Lamp
+Adafruit_MQTT_Subscribe esp_dht_mq9 = Adafruit_MQTT_Subscribe(&mqtt, MQTT_USERNAME "/esp3/dht_mq9");            // get messages for dht
+
 /*************************** Sketch Code ************************************/
 
-
-DHT dht(DHT_PIN, DHT_TYPE);
 uint32_t x = 0;
+
+int timer = 0;
 
 void MQTT_connect();
 
-
+//DHT
+DHT dht(DHT_PIN, DHT_TYPE);
 String sh;
 String st;
-String dht_string = "Nothing stored untill now!";
+String dht_string = "Nothing stored untill now from DHT!";
 
-
+//Smoke
 int sensorValue;
 float sensor_volt;
 float RS_gas; // Get value of RS in a GAS
 float ratio; // Get ratio RS_GAS/RS_air
-String smoke_string;
+String mq9_string = "Nothing stored untill now from MQ9!";
 
-int timer = 0;
+//status
+String status_string = dht_string + mq9_string;
+
 
 void setup() {
   Serial.begin(115200);
 
   Serial.println(F("RPi-ESP3-MQTT"));
+  
   // Connect to WiFi access point.
   Serial.println(); Serial.println();
   Serial.print("Connecting to ");
@@ -79,22 +83,20 @@ void setup() {
   Serial.println("IP address: "); Serial.println(WiFi.localIP());
 
   // Setup MQTT subscription for feeds.
-  mqtt.subscribe(&esp_smoke);
-  mqtt.subscribe(&esp_dht);
+  mqtt.subscribe(&esp_dht_mq9);
 
+  //Start DHT
   dht.begin();
 }
 
 void loop() {
-  // Ensure the connection to the MQTT server is alive (this will make the first
-  // connection and automatically reconnect when disconnected).  See the MQTT_connect
+  
+  /* Ensure the connection to the MQTT server is alive (this will make the first
+  connection and automatically reconnect when disconnected).  See the MQTT_connect*/
   MQTT_connect();
-  // this is our 'wait for incoming subscription packets' busy subloop
-  // try to spend your time here
+  /* this is our 'wait for incoming subscription packets' busy subloop try to spend your time here*/
 
   /************* DHT code: *************/
-
-  Serial.println("starting dht again...");
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   float h = dht.readHumidity();
@@ -107,78 +109,53 @@ void loop() {
 
     st = String(temp);
     sh = String(h);
-    dht_string = "Humidity: " + sh + " %\t" + "Temperature: " + st + " *C";
-    Serial.println(dht_string);
+    dht_string = "Humidity: " + sh + " % " + "Temperature: " + st + " *C ";
+    //Serial.println(dht_string);
   }
 
   /************* Smoke code: *************/
-
-
   sensorValue = analogRead(A0);
   sensor_volt = (float)sensorValue / 1024 * 5.0;
   RS_gas = (5.0 - sensor_volt) / sensor_volt; // omit *RL
 
-  /*-----TODO------Replace the name "R0" with the value of R0 in the demo of First mq9_test -----TODO----*/
-  /*-----TODO------Replace the name "R0" with the value of R0 in the demo of First mq9_test -----TODO----*/
-  /*-----TODO------Replace the name "R0" with the value of R0 in the demo of First mq9_test -----TODO----*/
+  //-0.09 was the value of R0 from the mq9 tester file
   ratio = RS_gas / -0.09; // ratio = RS/R0
   /*-----------------------------------------------------------------------*/
-  smoke_string = "sensor_volt = " + String(sensor_volt) + "RS_ratio = " + String(RS_gas) + "Rs/R0 = " + String(ratio);
-  Serial.println(smoke_string);
+  mq9_string = "Voltage= " + String(sensor_volt) + "Ratio= "   + String(ratio);
+  //Serial.println(smoke_string);
+
+  /*----------------------------------Adding-------------------------------------*/
+  status_string = dht_string + mq9_string;
+  char status_char_array[status_string.length() + 1];
+  status_string.toCharArray(status_char_array, status_string.length() + 1 ); 
 
 
   /**************** MQTT subscription code: ****************/
-
-
   // Here its read the subscription
   Adafruit_MQTT_Subscribe *subscription;
   while ((subscription = mqtt.readSubscription())) {
-    if (subscription == &esp_smoke) {
-      char *message = (char *)esp_smoke.lastread;
+    if (subscription == &esp_dht_mq9) {
+      char *message = (char *)esp_dht_mq9.lastread;
       Serial.print(F("Got: "));
       Serial.println(message);
       // Check if the message feedback.
       if (strncmp(message, "feedback", 8) == 0) {
-        pi_lcd.publish("wait for Smoke response...");
-        char smoke_char_array[smoke_string.length() + 1];
-        smoke_string.toCharArray(smoke_char_array, smoke_string.length() + 1 );
-        pi_lcd.publish(smoke_char_array);
+        
+        pi_dht_mq9.publish(status_char_array);
 
       }
-
-    }
-    else if (subscription == &esp_dht) {
-      char *message = (char *)esp_dht.lastread;
-      Serial.print(F("Got: "));
-      Serial.println(message);
-      // Check if the message was for feedback
-      if (strncmp(message, "feedback", 8) == 0) {
-        pi_lcd.publish("wait for DHT response...");
-        char dht_char_array[dht_string.length() + 1];
-        dht_string.toCharArray(dht_char_array, dht_string.length() + 1 );
-        pi_lcd.publish(dht_char_array);
-
-      }
-
     }
   }
+  //Wait for 2 seconds before starting another temp and smoke getting
   delay(2000);
+  
   timer += 1;
   // each (t * 2) seconds sends feedback automatically
-  int t = 10;
-  pi_notif.publish(timer%t);
+  int t = 5;
   if (timer % t == 0) {
-    char dht_char_array[dht_string.length() + 1];
-    dht_string.toCharArray(dht_char_array, dht_string.length() + 1 );
-    pi_notif.publish(dht_char_array);
 
-    char smoke_char_array[smoke_string.length() + 1];
-    smoke_string.toCharArray(smoke_char_array, smoke_string.length() + 1 );
-    pi_notif.publish(smoke_char_array);
-
+        pi_dht_mq9.publish(status_char_array);
   }
-
-
 }
 
 

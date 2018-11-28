@@ -9,7 +9,7 @@
 #define WLAN_SSID       "Smart Lab"
 #define WLAN_PASS       "amints25"
 
-#define MQTT_SERVER      "192.168.43.101" // ip address of rpi
+#define MQTT_SERVER      "192.168.43.100" // ip address of rpi
 #define MQTT_PORT         1883
 #define MQTT_USERNAME    ""
 #define MQTT_PASSWORD         ""
@@ -101,21 +101,21 @@ void loop() {
       // Check if the message was off, on or toggle.
       if (strncmp(message, "off", 3) == 0) {
         digitalWrite(LAMP, LOW);
-        pi_notif.publish("Lamp Turned OFF");
+        pi_notif.publish("esp_lamp Turned OFF");
       }
-      else if (strncmp(message, "on", 3) == 0) {
+      else if (strncmp(message, "on", 2) == 0) {
         digitalWrite(LAMP, HIGH);
-        pi_notif.publish("Lamp Turned ON");
+        pi_notif.publish("esp_lamp Turned ON");
 
       }
       else if (strncmp(message, "toggle", 6) == 0) {
         if (digitalRead(LAMP) == HIGH) {
           digitalWrite(LAMP, LOW);
-          pi_notif.publish("Lamp Toggled and Turned OFF");
+          pi_notif.publish("esp_lamp Toggled and Turned OFF");
         }
         else if (digitalRead(LAMP) == LOW) {
           digitalWrite(LAMP, HIGH);
-          pi_notif.publish("Lamp Toggled and Turned ON");
+          pi_notif.publish("esp_lamp Toggled and Turned ON");
         }
       }
     }
