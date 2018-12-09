@@ -1,8 +1,8 @@
 
 !!!!!!-- Still Under Construction --!!!!!!!!
-# Smart Lab with RaspberryPi, Esp8266
+# Smart Lab with Raspberry Pi and Esp8266
 
-One RaspberryPi, three ESP8266s a bunch of sensors and datas to keep and use later.
+One RaspberryPi, three ESP8266s a bunch of sensors and datas to keep and use it later.
 
 ## Getting Started
 
