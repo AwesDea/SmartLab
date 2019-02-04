@@ -123,7 +123,7 @@ def get_IR_history():
         IR_history = pd.DataFrame({'date':[datetime.datetime.now()],'command':[np.nan]})
         IR_history.set_index('date', inplace=True)
         IR_history.to_pickle('IR history')
-        return IR_history
+    return IR_history
     
 def save_IR_history(df):
     df.to_pickle('IR history')
@@ -174,7 +174,7 @@ def on_message(client, userdata, msg):
         notif_list = msg.split(' ',1)
         notifs = get_notification_history()
         df = pd.DataFrame({'date':[date], 'sensor':[notif_list[0]], 'message':[notif_list[1]]})
-        df.set_index(date, inplace=True)
+        df.set_index('date', inplace=True)
         notifs = notifs.append(df)
         save_notification_history(notifs)
         new_notifications.append(msg)
@@ -224,11 +224,13 @@ def on_message(client, userdata, msg):
         ir_msg = msg.payload
         
         command = ir_msg.decode('UTF-8')
+        print(command,date)
         IR_history = get_IR_history()
         df = pd.DataFrame({'date':[date], 'command':[command]})
-        df.set_index(date, inplace=True)
+        df.set_index('date', inplace=True)
         IR_history = IR_history.append(df)
         save_IR_history(IR_history)
+        
         
         
         # FAN
@@ -290,7 +292,7 @@ def on_message(client, userdata, msg):
         print(dht_mq9_response)
         dht_mq9_history = get_dht_mq9_history()
         df = pd.DataFrame({'date':[date], 'temp':[dht_mq9_response[4]], 'humidity':[dht_mq9_response[1]], 'mq9_ratio':[dht_mq9_response[9]], 'mq9_volt':[dht_mq9_response[7]]})
-        df.set_index(date, inplace=True)
+        df.set_index('date', inplace=True)
         dht_mq9_history = dht_mq9_history.append(df)
         save_dht_mq9_history(dht_mq9_history)
         
@@ -351,6 +353,7 @@ def doorLock(lock):
                 client.publish('/pi/lock','unlock')
                 
                 #save the action in the dataframe
+                print(date,id)
                 df = pd.DataFrame({'date':[date], 'ID':[id], 'response':['Granted']})
                 df.set_index('date',inplace=True)
                 rfid_history = rfid_history.append(df)
