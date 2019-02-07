@@ -19,7 +19,7 @@
 //
 /************ Global State ******************/
 #define DHT_PIN      2              // Pin connected to the IR. GPIO 0
-#define LAMP    0              // Pin connected to the lamp. GPIO 2 
+#define A0    0              // Pin connected to the lamp. GPIO 2 
 #define DHT_TYPE DHT11  // for DHT model == DHT 11
 
 
@@ -31,7 +31,6 @@ Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT, MQTT_USERNAME, MQTT_P
 // Setup a feeds for publishing.
 
 // Notice MQTT paths for AIO follow the form: <username>/feeds/<feedname>
-Adafruit_MQTT_Publish pi_mqtt_led = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/mqtt led");         //checking mqtt connection for rpi
 Adafruit_MQTT_Publish pi_lcd = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/lcd");                   //give rpi messages for printing
 Adafruit_MQTT_Publish pi_notif = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/notif");               //give rpi notifications
 Adafruit_MQTT_Publish pi_dht_mq9 = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/dht_mq9");               //give rpi notifications
@@ -87,6 +86,11 @@ void setup() {
 
   //Start DHT
   dht.begin();
+
+  pinMode(A0, INPUT);
+  pi_notif.publish("KIIIIIIIIR.");            
+
+
 }
 
 void loop() {
@@ -179,5 +183,5 @@ void MQTT_connect() {
       while (1);
     }
   }
-  Serial.println("MQTT Connected!");
+    pi_notif.publish("ESP3 MQTT connected.");
 }

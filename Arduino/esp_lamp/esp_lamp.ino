@@ -31,7 +31,6 @@ Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT, MQTT_USERNAME, MQTT_P
 // Setup a feeds for publishing.
 
 // Notice MQTT paths for AIO follow the form: <username>/feeds/<feedname>
-Adafruit_MQTT_Publish pi_mqtt_led = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/mqtt led");   //checking mqtt connection for rpi
 Adafruit_MQTT_Publish pi_lcd = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/lcd");             //give rpi messages for printing
 Adafruit_MQTT_Publish pi_ir = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/ir");               // publish ir commands for rpi to handle
 Adafruit_MQTT_Publish pi_notif = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/notif");         //give rpi notifications
@@ -146,5 +145,5 @@ void MQTT_connect() {
       while (1);
     }
   }
-  Serial.println("MQTT Connected!");
+   pi_notif.publish("ESP2 MQTT connected.");
 }

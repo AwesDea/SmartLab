@@ -32,7 +32,6 @@ Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT, MQTT_USERNAME, MQTT_P
 // Setup a feeds for publishing.
 
 // Notice MQTT paths for AIO follow the form: <username>/feeds/<feedname>
-Adafruit_MQTT_Publish pi_mqtt_led = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/mqtt led");   //checking mqtt connection for rpi
 Adafruit_MQTT_Publish pi_lcd = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/lcd");             //give rpi messages for printing
 Adafruit_MQTT_Publish pi_ir = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/ir");               // publish ir commands for rpi to handle
 Adafruit_MQTT_Publish pi_notif = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/pi/notif");         //give rpi notifications
@@ -53,8 +52,11 @@ decode_results results;
 void setup() {
   Serial.begin(115200);
 
-  // set IR
+  // set IR 
   irrecv.enableIRIn();  // Start the receiver
+
+  //Set FanSpeed pin
+  pinMode(FAN_SPEED, OUTPUT);
 
   Serial.println(F("RPi-ESP1-MQTT"));
   // Connect to WiFi access point.
@@ -147,32 +149,28 @@ void MQTT_connect() {
       // basically die and wait for WDT to reset me
       while (1);
     }
+       pi_notif.publish("ESP1 MQTT connected.");
   }
-   pi_notif.publish("ESP1 MQTT connected.");
 }
 //function for setting speed of fan
 void set_fan_state(int state) {
   if (state == 0) {
     analogWrite(FAN_SPEED, 0); // Send PWM signal to L298N FAN_SPEED pin
-    Serial.println(state);
     pi_notif.publish("fan turned OFF");
   }
   
   else if (state == 1) {
     analogWrite(FAN_SPEED, 130); // Send PWM signal to L298N FAN_SPEED pin
-    Serial.println(state);
     pi_notif.publish("esp_fan turned LOW");
   }
   
   else if (state == 2) {
     analogWrite(FAN_SPEED, 185); // Send PWM signal to L298N FAN_SPEED pin
-    Serial.println(state);
     pi_notif.publish("esp_fan turned MEDIUM");
   }
   
   else if (state == 3) {
     analogWrite(FAN_SPEED, 255); // Send PWM signal to L298N FAN_SPEED pin
-    Serial.println(state);
     pi_notif.publish("esp_fan turned HIGH");
   }
 }
