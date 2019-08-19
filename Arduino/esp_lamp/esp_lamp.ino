@@ -1,4 +1,4 @@
-//ESP 2 with Lamp & IR
+ //ESP 2 with Lamp & IR
 
 #include <ESP8266WiFi.h>
 #include <IRrecv.h>

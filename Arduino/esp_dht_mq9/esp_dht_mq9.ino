@@ -52,15 +52,9 @@ String sh;
 String st;
 String dht_string = "Nothing stored untill now from DHT!";
 
-//Smoke
-int sensorValue;
-float sensor_volt;
-float RS_gas; // Get value of RS in a GAS
-float ratio; // Get ratio RS_GAS/RS_air
-String mq9_string = "Nothing stored untill now from MQ9!";
 
 //status
-String status_string = dht_string + mq9_string;
+String status_string = dht_string;
 
 
 void setup() {
@@ -86,8 +80,6 @@ void setup() {
 
   //Start DHT
   dht.begin();
-
-  pinMode(A0, INPUT);
   pi_notif.publish("KIIIIIIIIR.");            
 
 
@@ -99,6 +91,7 @@ void loop() {
   connection and automatically reconnect when disconnected).  See the MQTT_connect*/
   MQTT_connect();
   /* this is our 'wait for incoming subscription packets' busy subloop try to spend your time here*/
+  pi_notif.publish("koooooos.");            
 
   /************* DHT code: *************/
   // Reading temperature or humidity takes about 250 milliseconds!
@@ -109,6 +102,7 @@ void loop() {
 
   if (isnan(h) || isnan(temp)) {
     Serial.println("Failed to read from DHT sensor!");
+    dht_string = "Failed to read from DHT sensor!";
   } else {
 
     st = String(temp);
@@ -117,19 +111,9 @@ void loop() {
     //Serial.println(dht_string);
   }
 
-  /************* Smoke code: *************/
-  sensorValue = analogRead(A0);
-  sensor_volt = (float)sensorValue / 1024 * 5.0;
-  RS_gas = (5.0 - sensor_volt) / sensor_volt; // omit *RL
-
-  //-0.09 was the value of R0 from the mq9 tester file
-  ratio = RS_gas / -0.09; // ratio = RS/R0
-  /*-----------------------------------------------------------------------*/
-  mq9_string = "Voltage= " + String(sensor_volt) + "Ratio= "   + String(ratio);
-  //Serial.println(smoke_string);
 
   /*----------------------------------Adding-------------------------------------*/
-  status_string = dht_string + mq9_string;
+  status_string = dht_string;
   char status_char_array[status_string.length() + 1];
   status_string.toCharArray(status_char_array, status_string.length() + 1 ); 
 
@@ -150,16 +134,13 @@ void loop() {
       }
     }
   }
-  //Wait for 2 seconds before starting another temp and smoke getting
-  delay(2000);
-  
-  timer += 1;
-  // each (t * 2) seconds sends feedback automatically
-  int t = 5;
-  if (timer % t == 0) {
 
-        pi_dht_mq9.publish(status_char_array);
-  }
+  
+   pi_dht_mq9.publish(status_char_array);
+
+    //Wait for 2 seconds before starting another temp and smoke getting
+  delay(2000);
+
 }
 
 
