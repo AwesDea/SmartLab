@@ -15,7 +15,7 @@ One RaspberryPi, three ESP8266s, a bunch of sensors and data to keep and use it 
 
 ## Authors
 
-* **Hoora Abootalebi** - *Most of Hardware work* - [Hoora](https://github.com/HooraAboo)
+* **Hoorad Abootalebi** - *Most of Hardware work* - [Hoora](https://github.com/HooradAboo)
 * **Amin Isaai** - *Most of Software work* - [Amin](https://github.com/HooraAboo)
 
 See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
